@@ -12,7 +12,7 @@ jobs:
     name: Build Android Debug APK
     runs-on: ubuntu-latest
     env:
-      # إخفاء تحذيرات Node.js 20 وتفعيل النسخة الأحدث في جيت هاب
+      # لتجاوز تحذيرات Node.js القديمة في السيرفر
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
@@ -26,14 +26,13 @@ jobs:
         with:
           java-version: '17'
           distribution: 'zulu'
-          # التخزين المؤقت لملفات Gradle لتسريع العمليات القادمة
           cache: 'gradle'
 
+      # إعداد Gradle وضمان تعريف المستودعات
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build Debug APK
-        # بما أن gradlew مفقود، سنستخدم gradle المثبت في النظام مباشرة
         run: gradle assembleDebug --stacktrace
 
       - name: Upload Artifact
