@@ -5,7 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # يسمح بتشغيل البناء يدوياً من واجهة جيت هاب
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. جلب الكود من المستودع
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 2. إعداد بيئة جافا (Java 17 Zulu) مع تفعيل التخزين المؤقت لـ Gradle
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -25,18 +25,12 @@ jobs:
           distribution: 'zulu'
           cache: 'gradle'
 
-      # 3. إعطاء صلاحيات التشغيل لملف Gradle Wrapper
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
-
-      # 4. بناء نسخة الـ Debug APK
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
 
-      # 5. رفع الملف النهائي كـ Artifact قابل للتحميل
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Dazai-Player-Debug
           path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 7 # سيتم الاحتفاظ بالملف لمدة 7 أيام
+          retention-days: 7
