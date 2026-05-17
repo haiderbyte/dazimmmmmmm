@@ -1,34 +1,42 @@
-name: Build Dazai Player APK
+name: Build Dazai Player
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
+  workflow_dispatch: # يسمح بتشغيل البناء يدوياً من واجهة جيت هاب
 
 jobs:
   build:
+    name: Build Android Debug APK
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      # 1. جلب الكود من المستودع
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-        cache: 'gradle'
+      # 2. إعداد بيئة جافا (Java 17 Zulu) مع تفعيل التخزين المؤقت لـ Gradle
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: 'gradle'
 
-    - name: Grant Execute Permission for Gradlew
-      run: chmod +x gradlew
+      # 3. إعطاء صلاحيات التشغيل لملف Gradle Wrapper
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
+      # 4. بناء نسخة الـ Debug APK
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Dazai-Player-Debug
-        path: app/build/outputs/apk/debug/app-debug.apk
+      # 5. رفع الملف النهائي كـ Artifact قابل للتحميل
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dazai-Player-Debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7 # سيتم الاحتفاظ بالملف لمدة 7 أيام
