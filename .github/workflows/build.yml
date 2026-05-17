@@ -1,4 +1,4 @@
-name: Build Dazai Player
+name: Dazai Player Build
 
 on:
   push:
@@ -12,7 +12,6 @@ jobs:
     name: Build Android Debug APK
     runs-on: ubuntu-latest
     env:
-      # لتجاوز تحذيرات Node.js القديمة في السيرفر
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
@@ -28,16 +27,26 @@ jobs:
           distribution: 'zulu'
           cache: 'gradle'
 
-      # إعداد Gradle وضمان تعريف المستودعات
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
+      - name: Grant Execute Permission
+        run: |
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+          else
+            echo "Warning: gradlew wrapper not found. Creating a temporary one via system gradle..."
+            gradle wrapper
+            chmod +x gradlew
+          fi
+
+      - name: Clean and Build Debug APK
+        run: ./gradlew clean assembleDebug --stacktrace --build-cache --parallel --no-daemon -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Dazai-Player-Debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
           retention-days: 7
